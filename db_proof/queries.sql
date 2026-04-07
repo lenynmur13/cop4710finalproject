@@ -4,7 +4,7 @@
 -- NOTE: Written entirely by team — no AI assistance used.
 -- ============================================================
 
-USE your_database_name;
+USE BookOps;
 
 -- ──────────────────────────────────────────────────────────────
 -- QUERY 1: List all books with their shelf location
@@ -116,10 +116,6 @@ FROM Book
 WHERE pages > 200
 ORDER BY pages DESC;
 
--- QUERY 11: Customer view — all available books in store
--- Type: SELECT from VIEW
-SELECT * FROM v_available_books
-ORDER BY Category, Title;
 -- QUERY 11: Customer view — all available books in store
 -- Type: SELECT from VIEW
 SELECT * FROM v_available_books
