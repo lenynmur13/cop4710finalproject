@@ -1,7 +1,6 @@
+USE BookOps;
 INSERT INTO Store(store_id, phone_number, email, address) VALUES
     (1, '786-456-7890', 'storemymoney@example.com', 'SW 8th St');
-INSERT INTO Users(user_id, username, password, email, role) VALUES
-    (1, 'admin', 'admin123', 'admin@bookops.com', 'admin');
 INSERT INTO Users(user_id, username, password, email, role) VALUES
     (1, 'admin', 'admin123', 'admin@bookops.com', 'admin'),
     (2, 'shiranui', 'nibiru777', 'shiranui@example.com', 'user');
