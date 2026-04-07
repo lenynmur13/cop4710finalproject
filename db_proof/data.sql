@@ -1,13 +1,13 @@
 INSERT INTO Store(store_id, phone_number, email, address) VALUES
     (1, '786-456-7890', 'storemymoney@example.com', 'SW 8th St');
-INSERT INTO Users(user_id, username, password, email) VALUES
-    (1, 'shiranui', 'nibiru777', 'shiranui@example.com'),
-    (2, 'kazuma', 'steal123', 'kazuma@example.com'),
-    (3, 'asuna', 'swordart', 'asuna@example.com');
+INSERT INTO Users(user_id, username, password, email, role) VALUES
+    (1, 'admin', 'admin123', 'admin@bookops.com', 'admin');
+INSERT INTO Users(user_id, username, password, email, role) VALUES
+    (1, 'admin', 'admin123', 'admin@bookops.com', 'admin'),
+    (2, 'shiranui', 'nibiru777', 'shiranui@example.com', 'user');
 INSERT INTO Account(account_id, user_id, store_id) VALUES
     (1, 1, 1),
-    (2, 2, 1),
-    (3, 3, 1);
+    (2, 2, 1);
 INSERT INTO Shelf(shelf_id, store_id, floor, hall, building) VALUES
     (1, 1, 3, 'Hall A', 'Laplace'),
     (2, 1, 1, 'Hall B', 'HotelCalifornia'),

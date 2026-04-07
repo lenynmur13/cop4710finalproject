@@ -10,21 +10,23 @@ CREATE TABLE Store
 );
 CREATE TABLE Users
 (
-    user_id INT PRIMARY KEY,
+    user_id INT PRIMARY KEY AUTO_INCREMENT,
     username VARCHAR(50) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL
+    email VARCHAR(255) NOT NULL,
+    role VARCHAR(10) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'admin'))
+    
 );
 CREATE TABLE Account
 (
-    account_id INT PRIMARY KEY,
+    account_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
     store_id INT NOT NULL,
     FOREIGN KEY(user_id) REFERENCES Users(user_id)
 );
 CREATE TABLE Shelf
 (
-    shelf_id INT PRIMARY KEY,
+    shelf_id INT PRIMARY KEY AUTO_INCREMENT,
     store_id INT NOT NULL,
     floor TINYINT NOT NULL,
     hall VARCHAR(30) NOT NULL,
@@ -33,7 +35,7 @@ CREATE TABLE Shelf
 );
 CREATE TABLE Book
 (
-    book_id INT PRIMARY KEY,
+    book_id INT PRIMARY KEY AUTO_INCREMENT,
     yearpublished YEAR NOT NULL,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -45,7 +47,7 @@ CREATE TABLE Book
 -- Orders table to store order information
 CREATE TABLE Orders
 (
-    order_id INT PRIMARY KEY,
+    order_id INT PRIMARY KEY AUTO_INCREMENT,
     account_id INT NOT NULL,
     order_date DATE,
     FOREIGN KEY(account_id) REFERENCES Account(account_id)
@@ -53,7 +55,7 @@ CREATE TABLE Orders
 -- Junction table to link orders, books, and shelves
 CREATE TABLE Item
 (
-    item_id INT PRIMARY KEY,
+    item_id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT,
     shelf_id INT,
     quantity SMALLINT NOT NULL,
