@@ -4,7 +4,10 @@ def login(username, password):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute(
-        "SELECT * FROM Users WHERE username = %s AND password = %s",
+        """SELECT Users.*, Account.account_id
+           FROM Users
+           JOIN Account ON Users.user_id = Account.user_id
+           WHERE Users.username = %s AND Users.password = %s""",
         (username, password)
     )
     user = cursor.fetchone()
@@ -39,7 +42,19 @@ def register(username, password, email):
 def get_available_books():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM v_available_books ORDER BY Category, Title")
+    cursor.execute("""
+        SELECT Book.book_id, Item.item_id, Item.shelf_id,
+               Book.name AS Title, Book.category AS Category,
+               Book.yearpublished AS YearPublished, Book.pages AS Pages,
+               Book.description AS Description,
+               Shelf.hall AS Hall, Shelf.building AS Building, Shelf.floor AS Floor,
+               Item.quantity AS QuantityAvailable
+        FROM Item
+        JOIN Book  ON Item.book_id  = Book.book_id
+        JOIN Shelf ON Item.shelf_id = Shelf.shelf_id
+        WHERE Item.order_id IS NULL AND Item.quantity > 0
+        ORDER BY Book.category, Book.name
+    """)
     books = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -49,6 +64,13 @@ def place_order(account_id, book_id, shelf_id, quantity):
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        # reduce inventory item quantity
+        cursor.execute(
+            "UPDATE Item SET quantity = quantity - %s WHERE book_id = %s AND order_id IS NULL AND quantity >= %s",
+            (quantity, book_id, quantity)
+        )
+        if cursor.rowcount == 0:
+            raise Exception("Not enough copies available.")
         cursor.execute(
             "INSERT INTO Orders(account_id, order_date) VALUES (%s, CURDATE())",
             (account_id,)
@@ -86,7 +108,7 @@ def get_user_orders(account_id):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT Orders.order_id, Book.name AS BookTitle,
+        SELECT Orders.order_id, Item.item_id, Book.name AS BookTitle,
                Item.quantity, Orders.order_date,
                Shelf.hall, Shelf.building
         FROM Orders
@@ -144,6 +166,86 @@ def delete_book(book_id):
         cursor.execute("DELETE FROM Book WHERE book_id = %s", (book_id,))
         conn.commit()
         return True, "Book deleted successfully!"
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def get_all_shelves():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT shelf_id, hall, building, floor FROM Shelf ORDER BY building, hall")
+    shelves = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return shelves
+
+
+def get_inventory():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("""
+        SELECT Item.item_id, Item.quantity, Book.book_id,
+               Book.name AS Title, Book.category AS Category,
+               Shelf.shelf_id, Shelf.hall AS Hall, Shelf.building AS Building, Shelf.floor AS Floor
+        FROM Item
+        JOIN Book  ON Item.book_id  = Book.book_id
+        JOIN Shelf ON Item.shelf_id = Shelf.shelf_id
+        WHERE Item.order_id IS NULL
+        ORDER BY Book.name
+    """)
+    items = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return items
+
+
+def add_to_inventory(book_id, shelf_id, quantity):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO Item(order_id, book_id, shelf_id, quantity) VALUES (NULL, %s, %s, %s)",
+            (book_id, shelf_id, quantity)
+        )
+        conn.commit()
+        return True, "Book added to inventory!"
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def update_inventory_quantity(item_id, quantity):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "UPDATE Item SET quantity = %s WHERE item_id = %s AND order_id IS NULL",
+            (quantity, item_id)
+        )
+        conn.commit()
+        return True, "Quantity updated!"
+    except Exception as e:
+        conn.rollback()
+        return False, str(e)
+    finally:
+        cursor.close()
+        conn.close()
+
+
+def remove_from_inventory(item_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM Item WHERE item_id = %s AND order_id IS NULL", (item_id,))
+        conn.commit()
+        return True, "Removed from inventory!"
     except Exception as e:
         conn.rollback()
         return False, str(e)
