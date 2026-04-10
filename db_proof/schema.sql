@@ -42,7 +42,6 @@ CREATE TABLE Book
     category VARCHAR(50) NOT NULL,
     pages INT NOT NULL
 );
--- end of generic code
 
 -- Orders table to store order information
 CREATE TABLE Orders

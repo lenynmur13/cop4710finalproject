@@ -1,4 +1,6 @@
 from db import get_connection
+# Backend of BookOps!
+# Set of handy functions to interact with the database and perform operations for both roles
 # authentication functions. admin account is preset with username 'admin' and password 'admin123'
 def login(username, password):
     conn = get_connection()
